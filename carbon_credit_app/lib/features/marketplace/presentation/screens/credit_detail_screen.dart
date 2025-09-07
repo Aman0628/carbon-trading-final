@@ -8,7 +8,7 @@ import '../../../../core/providers/cart_provider.dart';
 
 class CreditDetailScreen extends ConsumerStatefulWidget {
   final String creditId;
-
+  
   const CreditDetailScreen({
     super.key,
     required this.creditId,

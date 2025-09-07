@@ -108,7 +108,7 @@ class BuyerDashboard extends ConsumerWidget {
                 Expanded(
                   child: _buildActionCard(
                     context: context,
-                    icon: Icons.certificate,
+                    icon: Icons.card_membership,
                     title: 'My Certificates',
                     subtitle: 'View portfolio',
                     onTap: () => context.go('/certificates'),

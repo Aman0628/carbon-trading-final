@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/providers/cart_provider.dart';
+import '../../../../core/models/credit_listing.dart';
 
 class CartScreen extends ConsumerWidget {
   const CartScreen({super.key});
