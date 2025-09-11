@@ -27,22 +27,38 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   void _handleLogin() async {
     if (_formKey.currentState!.validate()) {
+      print('Starting login process...');
       await ref.read(authProvider.notifier).login(
         _emailController.text.trim(),
         _passwordController.text,
       );
       
-      final authState = ref.read(authProvider);
-      if (authState.isAuthenticated) {
-        final user = authState.user!;
-        if (user.kycStatus == 'approved') {
-          if (user.role == UserRole.buyer) {
-            context.go('/dashboard/buyer');
+      if (mounted) {
+        final authState = ref.read(authProvider);
+        print('Login completed - Auth: ${authState.isAuthenticated}, User: ${authState.user?.name}, KYC: ${authState.user?.kycStatus}');
+        
+        if (authState.isAuthenticated) {
+          final user = authState.user!;
+          if (user.kycStatus == 'approved') {
+            if (user.role == UserRole.buyer) {
+              print('Navigating to buyer dashboard');
+              context.go('/dashboard/buyer');
+            } else {
+              print('Navigating to seller dashboard');
+              context.go('/dashboard/seller');
+            }
           } else {
-            context.go('/dashboard/seller');
+            print('Navigating to KYC upload');
+            context.go('/kyc/upload');
           }
-        } else {
-          context.go('/kyc/upload');
+        } else if (authState.error != null) {
+          print('Login error: ${authState.error}');
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(authState.error!),
+              backgroundColor: Colors.red,
+            ),
+          );
         }
       }
     }

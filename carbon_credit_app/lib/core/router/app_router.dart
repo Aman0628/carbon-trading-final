@@ -14,6 +14,7 @@ import '../../features/cart/presentation/screens/cart_screen.dart';
 import '../../features/cart/presentation/screens/checkout_screen.dart';
 import '../../features/certificates/presentation/screens/certificates_screen.dart';
 import '../providers/auth_provider.dart';
+import '../models/user.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authProvider);
@@ -23,17 +24,46 @@ final appRouterProvider = Provider<GoRouter>((ref) {
     redirect: (context, state) {
       final isAuthenticated = authState.isAuthenticated;
       final isKYCApproved = authState.user?.kycStatus == 'approved';
+      final currentLocation = state.matchedLocation;
+      
+      // Debug logging
+      print('Router redirect - Auth: $isAuthenticated, KYC: $isKYCApproved, Location: $currentLocation');
+      
+      // If authenticated and on landing page, redirect to appropriate dashboard
+      if (isAuthenticated && currentLocation == '/') {
+        if (isKYCApproved) {
+          final userRole = authState.user?.role;
+          if (userRole == UserRole.buyer) {
+            print('Redirecting authenticated user to buyer dashboard');
+            return '/dashboard/buyer';
+          } else {
+            print('Redirecting authenticated user to seller dashboard');
+            return '/dashboard/seller';
+          }
+        } else {
+          print('Redirecting authenticated user to KYC');
+          return '/kyc/upload';
+        }
+      }
+      
+      // Allow access to login/register pages for unauthenticated users
+      if (!isAuthenticated && (currentLocation == '/login' || currentLocation == '/register')) {
+        return null;
+      }
       
       // Redirect unauthenticated users to landing
-      if (!isAuthenticated && state.matchedLocation != '/login' && state.matchedLocation != '/register') {
+      if (!isAuthenticated && currentLocation != '/') {
+        print('Redirecting to landing - not authenticated');
         return '/';
       }
       
-      // Redirect authenticated users without KYC to KYC flow
-      if (isAuthenticated && !isKYCApproved && !state.matchedLocation.startsWith('/kyc')) {
+      // Redirect authenticated users without KYC to KYC flow (except if already in KYC flow)
+      if (isAuthenticated && !isKYCApproved && !currentLocation.startsWith('/kyc')) {
+        print('Redirecting to KYC - authenticated but KYC not approved');
         return '/kyc/upload';
       }
       
+      print('No redirect needed');
       return null;
     },
     routes: [
