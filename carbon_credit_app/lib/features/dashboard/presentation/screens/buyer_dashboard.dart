@@ -13,36 +13,126 @@ class BuyerDashboard extends ConsumerWidget {
     final authState = ref.watch(authProvider);
     final cartState = ref.watch(cartProvider);
     final user = authState.user!;
+    final scaffoldKey = GlobalKey<ScaffoldState>();
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Dashboard'),
-        actions: [
-          IconButton(
-            icon: Badge(
-              label: Text('${cartState.itemCount}'),
-              child: const Icon(Icons.shopping_cart),
-            ),
-            onPressed: () => context.go('/cart'),
-          ),
-          PopupMenuButton(
-            itemBuilder: (context) => [
-              PopupMenuItem(
-                child: const Text('Logout'),
-                onTap: () {
-                  ref.read(authProvider.notifier).logout();
-                  context.go('/');
-                },
-              ),
-            ],
-          ),
-        ],
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
+      key: scaffoldKey,
+      drawer: _buildSidebar(context, ref, user),
+      body: SafeArea(
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Custom Header
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: AppColors.surface,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Row(
+                children: [
+                  // Left side - Name and Role (Clickable)
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () => scaffoldKey.currentState?.openDrawer(),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            user.name,
+                            style: AppTextStyles.heading3.copyWith(
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          Text(
+                            'Compliance',
+                            style: AppTextStyles.caption.copyWith(
+                              color: AppColors.textSecondary,
+                              fontSize: 10,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  
+                  // Right side - EXC Coins only
+                  GestureDetector(
+                    onTap: () => context.go('/wallet'),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.monetization_on,
+                            size: 16,
+                            color: AppColors.primary,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            '2,450 EXC',
+                            style: AppTextStyles.caption.copyWith(
+                              color: AppColors.primary,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            
+            // Search Bar
+            Container(
+              padding: const EdgeInsets.all(16),
+              child: TextField(
+                decoration: InputDecoration(
+                  hintText: 'Search carbon credits, projects...',
+                  prefixIcon: const Icon(Icons.search),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: AppColors.divider),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: AppColors.divider),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: AppColors.primary),
+                  ),
+                  filled: true,
+                  fillColor: AppColors.surface,
+                ),
+              ),
+            ),
+            
+            // Live Trading Marquee
+            Container(
+              height: 40,
+              color: AppColors.primary.withOpacity(0.1),
+              child: _buildTradingMarquee(),
+            ),
+            
+            // Dashboard Content
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
             // Welcome Card
             Card(
               child: Padding(
@@ -190,6 +280,12 @@ class BuyerDashboard extends ConsumerWidget {
                 ],
               ),
             ),
+            const SizedBox(height: 20),
+            
+                  ],
+                ),
+              ),
+            ),
           ],
         ),
       ),
@@ -276,6 +372,160 @@ class BuyerDashboard extends ConsumerWidget {
       title: Text(title, style: AppTextStyles.bodyLarge),
       subtitle: Text(subtitle, style: AppTextStyles.bodyMedium),
       trailing: Text(time, style: AppTextStyles.caption),
+    );
+  }
+
+  Widget _buildSidebar(BuildContext context, WidgetRef ref, user) {
+    return Drawer(
+      child: Column(
+        children: [
+          // Header
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: AppColors.primary,
+            ),
+            child: SafeArea(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  CircleAvatar(
+                    radius: 30,
+                    backgroundColor: Colors.white,
+                    child: Text(
+                      user.name[0].toUpperCase(),
+                      style: AppTextStyles.heading2.copyWith(
+                        color: AppColors.primary,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    user.name,
+                    style: AppTextStyles.heading3.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  Text(
+                    'Compliance',
+                    style: AppTextStyles.caption.copyWith(
+                      color: Colors.white70,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      'User ID: BC${user.email.hashCode.abs().toString().substring(0, 6)}',
+                      style: AppTextStyles.caption.copyWith(
+                        color: Colors.white,
+                        fontFamily: 'monospace',
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          
+          // Menu Items
+          Expanded(
+            child: ListView(
+              padding: EdgeInsets.zero,
+              children: [
+                _buildMenuItem(
+                  icon: Icons.settings,
+                  title: 'Settings',
+                  onTap: () => Navigator.pop(context),
+                ),
+                _buildMenuItem(
+                  icon: Icons.payment,
+                  title: 'Payment Options',
+                  onTap: () => Navigator.pop(context),
+                ),
+                _buildMenuItem(
+                  icon: Icons.explore,
+                  title: 'Explore',
+                  onTap: () => Navigator.pop(context),
+                ),
+                _buildMenuItem(
+                  icon: Icons.account_balance,
+                  title: 'Govt Schemes',
+                  onTap: () => Navigator.pop(context),
+                ),
+                _buildMenuItem(
+                  icon: Icons.newspaper,
+                  title: 'News',
+                  onTap: () => Navigator.pop(context),
+                ),
+                _buildMenuItem(
+                  icon: Icons.public,
+                  title: 'International Market',
+                  onTap: () => Navigator.pop(context),
+                ),
+                const Divider(),
+                _buildMenuItem(
+                  icon: Icons.logout,
+                  title: 'Logout',
+                  onTap: () {
+                    Navigator.pop(context);
+                    ref.read(authProvider.notifier).logout();
+                    context.go('/');
+                  },
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMenuItem({
+    required IconData icon,
+    required String title,
+    required VoidCallback onTap,
+  }) {
+    return ListTile(
+      leading: Icon(icon, color: AppColors.primary),
+      title: Text(title),
+      onTap: onTap,
+    );
+  }
+
+  Widget _buildTradingMarquee() {
+    return StreamBuilder(
+      stream: Stream.periodic(const Duration(seconds: 2), (i) => i),
+      builder: (context, snapshot) {
+        final transactions = [
+          'User BC847291 bought 150 EXC worth 45 Carbon Credits',
+          'User BC392847 sold 200 EXC worth 60 Carbon Credits',
+          'User BC758392 bought 75 EXC worth 22 Carbon Credits',
+          'User BC194857 sold 300 EXC worth 90 Carbon Credits',
+          'User BC647382 bought 120 EXC worth 36 Carbon Credits',
+        ];
+        
+        return Container(
+          alignment: Alignment.centerLeft,
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 500),
+            child: Text(
+              transactions[(snapshot.data ?? 0) % transactions.length],
+              key: ValueKey(snapshot.data ?? 0),
+              style: AppTextStyles.caption.copyWith(
+                color: AppColors.primary,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }

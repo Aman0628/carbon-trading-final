@@ -16,17 +16,12 @@ class LandingScreen extends StatelessWidget {
             children: [
               const Spacer(),
               // Logo and Title
-              const Icon(
-                Icons.eco,
-                size: 80,
-                color: AppColors.primary,
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'Carbon Credit\nMarketplace',
-                textAlign: TextAlign.center,
-                style: AppTextStyles.heading1.copyWith(
-                  color: AppColors.primary,
+              Container(
+                height: 120,
+                width: double.infinity,
+                child: Image.asset(
+                  'assets/images/balancing our carbon footfrints.png',
+                  fit: BoxFit.contain,
                 ),
               ),
               const SizedBox(height: 8),
@@ -60,7 +55,7 @@ class LandingScreen extends StatelessWidget {
               
               const Spacer(),
               
-              // Action Buttons
+              // Get Started Button
               ElevatedButton(
                 onPressed: () => context.go('/register'),
                 child: const Text('Get Started'),

@@ -91,24 +91,18 @@ class _AadhaarVerifyScreenState extends ConsumerState<AadhaarVerifyScreen> {
       );
 
       if (result['success'] == true) {
-        // Update KYC status in auth provider
-        ref.read(authProvider.notifier).updateKYCStatus('approved');
+        // Don't update KYC status yet - user should wait for verification
         
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('KYC verification completed successfully!'),
+              content: Text('Aadhaar verification completed successfully!'),
               backgroundColor: AppColors.success,
             ),
           );
           
-          // Navigate to appropriate dashboard
-          final user = ref.read(authProvider).user;
-          if (user?.role == UserRole.buyer) {
-            context.go('/dashboard/buyer');
-          } else {
-            context.go('/dashboard/seller');
-          }
+          // Navigate to waitlist for team verification
+          context.go('/waitlist');
         }
       } else {
         if (mounted) {

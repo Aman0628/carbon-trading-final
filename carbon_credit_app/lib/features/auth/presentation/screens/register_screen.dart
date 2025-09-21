@@ -14,11 +14,11 @@ class RegisterScreen extends ConsumerStatefulWidget {
 
 class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _nameController = TextEditingController();
-  final _emailController = TextEditingController();
-  final _phoneController = TextEditingController();
-  final _passwordController = TextEditingController();
-  final _confirmPasswordController = TextEditingController();
+  final _nameController = TextEditingController(text: 'Aman Kori');
+  final _emailController = TextEditingController(text: 'Abcd@gmail.com');
+  final _phoneController = TextEditingController(text: '1234567809');
+  final _passwordController = TextEditingController(text: 'abcd1234');
+  final _confirmPasswordController = TextEditingController(text: 'abcd1234');
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
   UserRole _selectedRole = UserRole.buyer;
@@ -85,8 +85,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 
                 // Role Selection
                 Text(
-                  'I want to:',
-                  style: AppTextStyles.heading3,
+                  'Register as',
+                  style: AppTextStyles.bodyLarge,
                 ),
                 const SizedBox(height: 12),
                 Row(
@@ -94,8 +94,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     Expanded(
                       child: _buildRoleCard(
                         role: UserRole.buyer,
-                        title: 'Buy Credits',
-                        description: 'Purchase carbon credits for offsetting',
+                        title: 'Compilance',
+                        description: 'Buy Credits',
                         icon: Icons.shopping_cart,
                       ),
                     ),
@@ -103,8 +103,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     Expanded(
                       child: _buildRoleCard(
                         role: UserRole.seller,
-                        title: 'Sell Credits',
-                        description: 'List and sell carbon credits',
+                        title: 'Project Developer',
+                        description: 'Sell Credits',
                         icon: Icons.sell,
                       ),
                     ),
@@ -289,7 +289,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             const SizedBox(height: 8),
             Text(
               title,
-              style: AppTextStyles.bodyLarge.copyWith(
+              style: AppTextStyles.bodyMedium.copyWith(
                 fontWeight: FontWeight.w600,
                 color: isSelected ? AppColors.primary : AppColors.textPrimary,
               ),
