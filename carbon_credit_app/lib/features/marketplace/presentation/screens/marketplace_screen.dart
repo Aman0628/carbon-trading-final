@@ -78,13 +78,6 @@ class _MarketplaceScreenState extends ConsumerState<MarketplaceScreen> {
                       ),
                       const SizedBox(width: 8),
                       _buildFilterChip(
-                        'Renewable Energy',
-                        filter.projectType == 'Renewable Energy',
-                        () => ref.read(marketplaceFilterProvider.notifier)
-                            .state = filter.copyWith(projectType: 'Renewable Energy'),
-                      ),
-                      const SizedBox(width: 8),
-                      _buildFilterChip(
                         'Forestry',
                         filter.projectType == 'Forestry',
                         () => ref.read(marketplaceFilterProvider.notifier)
@@ -92,10 +85,10 @@ class _MarketplaceScreenState extends ConsumerState<MarketplaceScreen> {
                       ),
                       const SizedBox(width: 8),
                       _buildFilterChip(
-                        'Energy Efficiency',
-                        filter.projectType == 'Energy Efficiency',
+                        'Reforestation',
+                        filter.projectType == 'Reforestation',
                         () => ref.read(marketplaceFilterProvider.notifier)
-                            .state = filter.copyWith(projectType: 'Energy Efficiency'),
+                            .state = filter.copyWith(projectType: 'Reforestation'),
                       ),
                     ],
                   ),

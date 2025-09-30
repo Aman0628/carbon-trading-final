@@ -3,8 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/services/api_service.dart';
-import '../../../../core/providers/auth_provider.dart';
-import '../../../../core/models/user.dart';
 
 class AadhaarVerifyScreen extends ConsumerStatefulWidget {
   const AadhaarVerifyScreen({super.key});
@@ -101,8 +99,8 @@ class _AadhaarVerifyScreenState extends ConsumerState<AadhaarVerifyScreen> {
             ),
           );
           
-          // Navigate to waitlist for team verification
-          context.go('/waitlist');
+          // Navigate to PAN verification screen
+          context.go('/kyc/pan-verify');
         }
       } else {
         if (mounted) {

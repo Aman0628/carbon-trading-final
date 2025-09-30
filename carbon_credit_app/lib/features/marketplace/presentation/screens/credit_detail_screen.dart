@@ -1,3 +1,4 @@
+import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -178,6 +179,15 @@ class _CreditDetailScreenState extends ConsumerState<CreditDetailScreen> {
                         ),
                       ),
                       const SizedBox(height: 20),
+
+                      // Price History
+                      Text(
+                        'Price History (Last 30 Days)',
+                        style: AppTextStyles.heading3,
+                      ),
+                      const SizedBox(height: 12),
+                      _buildPriceHistoryCard(),
+                      const SizedBox(height: 20),
                       
                       // Quantity Selector
                       Text(
@@ -323,6 +333,15 @@ class _CreditDetailScreenState extends ConsumerState<CreditDetailScreen> {
                           ),
                         ),
                       ),
+                      const SizedBox(height: 20),
+
+                      // Seller Information
+                      Text(
+                        'Seller Information',
+                        style: AppTextStyles.heading3,
+                      ),
+                      const SizedBox(height: 12),
+                      _buildSellerInfoCard(listing.sellerName),
                       const SizedBox(height: 32),
                       
                       // Action Buttons
@@ -408,5 +427,95 @@ class _CreditDetailScreenState extends ConsumerState<CreditDetailScreen> {
     ref.read(cartProvider.notifier).clearCart();
     ref.read(cartProvider.notifier).addToCart(listing, _quantity);
     context.go('/checkout');
+  }
+
+  Widget _buildPriceHistoryCard() {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: SizedBox(
+          height: 150,
+          child: LineChart(
+            LineChartData(
+              gridData: const FlGridData(show: false),
+              titlesData: const FlTitlesData(show: false),
+              borderData: FlBorderData(show: false),
+              lineBarsData: [
+                LineChartBarData(
+                  spots: const [
+                    FlSpot(0, 3),
+                    FlSpot(2.6, 2),
+                    FlSpot(4.9, 5),
+                    FlSpot(6.8, 3.1),
+                    FlSpot(8, 4),
+                    FlSpot(9.5, 3),
+                    FlSpot(11, 4),
+                  ],
+                  isCurved: true,
+                  color: AppColors.primary,
+                  barWidth: 3,
+                  isStrokeCapRound: true,
+                  dotData: const FlDotData(show: false),
+                  belowBarData: BarAreaData(
+                    show: true,
+                    color: AppColors.primary.withOpacity(0.1),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSellerInfoCard(String sellerName) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const CircleAvatar(
+                  child: Icon(Icons.storefront),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(sellerName, style: AppTextStyles.bodyLarge.copyWith(fontWeight: FontWeight.bold)),
+                      const Text('Verified Seller', style: AppTextStyles.caption),
+                    ],
+                  ),
+                ),
+                const Icon(Icons.arrow_forward_ios, size: 16, color: AppColors.textSecondary),
+              ],
+            ),
+            const Divider(height: 24),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                _buildSellerStat('Rating', '4.8/5 (127 reviews)'),
+                _buildSellerStat('Response Time', '95% (within 24h)'),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSellerStat(String label, String value) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: AppTextStyles.caption),
+        const SizedBox(height: 4),
+        Text(value, style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.w600)),
+      ],
+    );
   }
 }
