@@ -59,6 +59,24 @@ class _KYCWaitingScreenState extends ConsumerState<KYCWaitingScreen>
     );
   }
 
+  void _goToDashboard() {
+    final authState = ref.read(authProvider);
+    final user = authState.user;
+    
+    if (user?.role == UserRole.seller) {
+      context.go('/seller-dashboard');
+    } else {
+      context.go('/buyer-dashboard');
+    }
+    
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Welcome to your dashboard!'),
+        backgroundColor: AppColors.success,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -69,7 +87,7 @@ class _KYCWaitingScreenState extends ConsumerState<KYCWaitingScreen>
         foregroundColor: Colors.white,
       ),
       body: SafeArea(
-        child: Padding(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.all(24.0),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -188,19 +206,48 @@ class _KYCWaitingScreenState extends ConsumerState<KYCWaitingScreen>
                   ),
                 ),
               ),
-              const Spacer(),
+              const SizedBox(height: 48),
+              
+              // Go to Dashboard button
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: ElevatedButton.icon(
+                  onPressed: _goToDashboard,
+                  icon: const Icon(Icons.dashboard),
+                  label: const Text('Go to Dashboard'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
               
               // Demo skip button
               if (DemoConfig.ENABLE_KYC_SKIP)
-                OutlinedButton.icon(
-                  onPressed: _handleDemoSkip,
-                  icon: const Icon(Icons.fast_forward),
-                  label: const Text('Skip Verification for Demo'),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: AppColors.warning,
-                    side: BorderSide(color: AppColors.warning),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  child: OutlinedButton.icon(
+                    onPressed: _handleDemoSkip,
+                    icon: const Icon(Icons.fast_forward),
+                    label: const Text('Skip Verification for Demo'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppColors.warning,
+                      side: BorderSide(color: AppColors.warning, width: 2),
+                      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
                   ),
                 ),
+              const SizedBox(height: 24),
             ],
           ),
         ),

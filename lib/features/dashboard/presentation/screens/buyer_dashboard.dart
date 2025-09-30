@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/theme/custom_components.dart';
 import '../../../../core/providers/auth_provider.dart';
 import '../../../tools/presentation/screens/tools_screen.dart';
 import '../../../marketplace/presentation/screens/buyer_marketplace_screen.dart';
@@ -117,115 +118,208 @@ class _BuyerDashboardState extends ConsumerState<BuyerDashboard>
       body: SafeArea(
         child: Column(
           children: [
-            // Custom Header
+            // Modern Gradient Header
             Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: AppColors.surface,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
-                    blurRadius: 4,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
+              decoration: const BoxDecoration(
+                gradient: AppColors.primaryGradient,
+                boxShadow: AppShadows.card,
               ),
-              child: Row(
-                children: [
-                  // Left side - Name and Role (Clickable)
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: () => _scaffoldKey.currentState?.openDrawer(),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            user.name,
-                            style: AppTextStyles.heading3.copyWith(
-                              fontWeight: FontWeight.w600,
+              child: SafeArea(
+                bottom: false,
+                child: Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Row(
+                    children: [
+                      // Profile Avatar with Gradient Background
+                      GestureDetector(
+                        onTap: () => _scaffoldKey.currentState?.openDrawer(),
+                        child: Container(
+                          width: 50,
+                          height: 50,
+                          decoration: BoxDecoration(
+                            gradient: AppColors.lightGradient,
+                            borderRadius: BorderRadius.circular(25),
+                            border: Border.all(color: Colors.white.withValues(alpha: 0.3), width: 2),
+                          ),
+                          child: Center(
+                            child: Text(
+                              user.name.isNotEmpty ? user.name[0].toUpperCase() : 'U',
+                              style: AppTextStyles.heading3.copyWith(
+                                color: AppColors.primary,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
-                          Text(
-                            'Compliance',
-                            style: AppTextStyles.caption.copyWith(
-                              color: AppColors.textSecondary,
-                              fontSize: 10,
-                            ),
-                          ),
-                        ],
+                        ),
                       ),
-                    ),
-                  ),
-                  
-                  // Right side - EXC Coins only
-                  GestureDetector(
-                    onTap: () => context.push('/wallet'),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: AppColors.primary.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            Icons.monetization_on,
-                            size: 16,
-                            color: AppColors.primary,
+                      const SizedBox(width: 16),
+                      
+                      // User Info
+                      Expanded(
+                        child: GestureDetector(
+                          onTap: () => _scaffoldKey.currentState?.openDrawer(),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Welcome back,',
+                                style: AppTextStyles.bodySmall.copyWith(
+                                  color: Colors.white.withValues(alpha: 0.8),
+                                ),
+                              ),
+                              Text(
+                                user.name,
+                                style: AppTextStyles.heading3.copyWith(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              StatusChip(
+                                label: 'Verified Buyer',
+                                color: AppColors.success,
+                                icon: Icons.verified,
+                              ),
+                            ],
                           ),
-                          const SizedBox(width: 4),
-                          Text(
-                            '2,450 EXC',
-                            style: AppTextStyles.caption.copyWith(
-                              color: AppColors.primary,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
+                        ),
                       ),
-                    ),
+                      
+                      // EXC Balance Card
+                      GestureDetector(
+                        onTap: () => context.push('/wallet'),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
+                          ),
+                          child: Column(
+                            children: [
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    Icons.account_balance_wallet,
+                                    size: 18,
+                                    color: Colors.white,
+                                  ),
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    '2,450',
+                                    style: AppTextStyles.heading4.copyWith(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              Text(
+                                'EXC Coins',
+                                style: AppTextStyles.caption.copyWith(
+                                  color: Colors.white.withValues(alpha: 0.8),
+                                  fontSize: 10,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-            ),
-            
-            // Search Bar
-            Container(
-              padding: const EdgeInsets.all(16),
-              child: TextField(
-                decoration: InputDecoration(
-                  hintText: 'Search carbon credits, projects...',
-                  prefixIcon: const Icon(Icons.search),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: AppColors.divider),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: AppColors.divider),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: AppColors.primary),
-                  ),
-                  filled: true,
-                  fillColor: AppColors.surface,
                 ),
               ),
             ),
             
-            // Tab Bar
-            TabBar(
-              controller: _tabController,
-              isScrollable: true,
-              tabs: const [
-                Tab(text: 'Explore'),
-                Tab(text: 'Portfolio'),
-                Tab(text: 'Marketplace'),
-                Tab(text: 'My Certificates'),
-                Tab(text: 'Orders'),
-              ],
+            // Enhanced Search Bar
+            Container(
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: AppShadows.card,
+                      ),
+                      child: TextField(
+                        decoration: InputDecoration(
+                          hintText: 'Search carbon credits, projects...',
+                          hintStyle: AppTextStyles.bodyMedium.copyWith(
+                            color: AppColors.textHint,
+                          ),
+                          prefixIcon: Icon(
+                            Icons.search,
+                            color: AppColors.textSecondary,
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(16),
+                            borderSide: BorderSide.none,
+                          ),
+                          filled: true,
+                          fillColor: Colors.white,
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 16,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: AppColors.primary,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: AppShadows.card,
+                    ),
+                    child: IconButton(
+                      onPressed: () {
+                        // Filter functionality
+                      },
+                      icon: const Icon(
+                        Icons.tune,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            
+            // Modern Tab Bar
+            Container(
+              margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+              decoration: BoxDecoration(
+                color: AppColors.background,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: AppShadows.card,
+              ),
+              child: TabBar(
+                controller: _tabController,
+                isScrollable: true,
+                indicator: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  gradient: AppColors.primaryGradient,
+                ),
+                indicatorSize: TabBarIndicatorSize.tab,
+                indicatorPadding: const EdgeInsets.all(4),
+                labelColor: Colors.white,
+                unselectedLabelColor: AppColors.textSecondary,
+                labelStyle: AppTextStyles.bodyMedium.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
+                unselectedLabelStyle: AppTextStyles.bodyMedium,
+                tabs: const [
+                  Tab(text: 'Explore'),
+                  Tab(text: 'Portfolio'),
+                  Tab(text: 'Marketplace'),
+                  Tab(text: 'Certificates'),
+                  Tab(text: 'Orders'),
+                ],
+              ),
             ),
 
             // Tab Bar View
@@ -461,7 +555,10 @@ class _BuyerDashboardState extends ConsumerState<BuyerDashboard>
           const SizedBox(height: 8),
           Text(
             label, 
-            style: AppTextStyles.caption,
+            style: AppTextStyles.caption.copyWith(
+              color: AppColors.textPrimary,
+              fontWeight: FontWeight.w600,
+            ),
             textAlign: TextAlign.center,
           ),
         ],
@@ -503,11 +600,17 @@ class _BuyerDashboardState extends ConsumerState<BuyerDashboard>
                     ),
                     Text(
                       'from ${transaction['projectName']!}',
-                      style: AppTextStyles.caption,
+                      style: AppTextStyles.caption.copyWith(
+                        color: AppColors.textPrimary.withValues(alpha: 0.8),
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                     Text(
                       transaction['time']!,
-                      style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary),
+                      style: AppTextStyles.caption.copyWith(
+                        color: AppColors.textPrimary.withValues(alpha: 0.7),
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                   ],
                 ),

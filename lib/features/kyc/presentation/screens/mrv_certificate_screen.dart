@@ -3,8 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../../core/theme/app_theme.dart';
-import '../../../../core/providers/auth_provider.dart';
-import '../../../../core/models/user.dart';
+import '../../../../core/config/demo_config.dart';
 
 class MRVCertificateScreen extends ConsumerStatefulWidget {
   const MRVCertificateScreen({super.key});
@@ -80,29 +79,15 @@ class _MRVCertificateScreenState extends ConsumerState<MRVCertificateScreen> {
         await Future.delayed(const Duration(seconds: 3));
 
         if (mounted) {
-          // Navigate to dashboard immediately after submission
-          final authState = ref.read(authProvider);
-          final user = authState.user!;
+          // Navigate to waiting page after MRV submission
+          context.go('/kyc/waiting');
           
-          if (user.role == UserRole.seller) {
-            context.go('/seller-dashboard');
-            // Show verification notification on dashboard
-            Future.delayed(const Duration(milliseconds: 500), () {
-              if (mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Verification under process - You will be notified once verified'),
-                    backgroundColor: AppColors.warning,
-                    duration: Duration(seconds: 5),
-                    behavior: SnackBarBehavior.floating,
-                    margin: EdgeInsets.all(16),
-                  ),
-                );
-              }
-            });
-          } else {
-            context.go('/buyer-dashboard');
-          }
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('MRV certificate uploaded successfully! Verification in progress.'),
+              backgroundColor: AppColors.success,
+            ),
+          );
         }
       } catch (e) {
         if (mounted) {
@@ -310,14 +295,15 @@ class _MRVCertificateScreenState extends ConsumerState<MRVCertificateScreen> {
                 // Skip for now (temporary)
                 TextButton(
                   onPressed: () {
-                    final authState = ref.read(authProvider);
-                    final user = authState.user!;
+                    // Skip MRV and go to waiting page
+                    context.go('/kyc/waiting');
                     
-                    if (user.role == UserRole.seller) {
-                      context.go('/seller-dashboard');
-                    } else {
-                      context.go('/buyer-dashboard');
-                    }
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('MRV verification skipped for demo - Proceeding to verification'),
+                        backgroundColor: AppColors.warning,
+                      ),
+                    );
                   },
                   child: Text(
                     'Skip for now (Demo Mode)',

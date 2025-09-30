@@ -86,10 +86,16 @@ class _KYCUploadScreenState extends ConsumerState<KYCUploadScreen> {
           ),
         );
 
-        if (_isIndividualRegistration) {
-          context.go('/kyc/aadhaar-verify');
-        } else {
+        // Navigate based on user role and registration type
+        final authState = ref.read(authProvider);
+        final user = authState.user;
+        
+        if (user?.role == UserRole.seller) {
+          // Sellers need PAN verification after Aadhaar
           context.go('/kyc/pan-verify');
+        } else {
+          // Buyers go directly to waiting page
+          context.go('/kyc/waiting');
         }
       }
     } catch (e) {

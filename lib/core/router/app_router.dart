@@ -10,6 +10,7 @@ import '../../features/auth/presentation/screens/waitlist_screen.dart';
 import '../../features/kyc/presentation/screens/kyc_upload_screen.dart';
 import '../../features/kyc/presentation/screens/aadhaar_verify_screen.dart';
 import '../../features/kyc/presentation/screens/pan_verify_screen.dart';
+import '../../features/kyc/presentation/screens/kyc_waiting_screen.dart';
 import '../../features/dashboard/presentation/screens/buyer_dashboard.dart';
 import '../../features/dashboard/presentation/screens/seller_dashboard.dart';
 import '../../features/marketplace/presentation/screens/marketplace_screen.dart';
@@ -28,6 +29,11 @@ import '../../features/menu/presentation/screens/contact_us_screen.dart';
 import '../../features/menu/presentation/screens/wallet_screen.dart' as menu_wallet;
 import '../../features/tools/presentation/screens/tools_screen.dart';
 import '../../features/kyc/presentation/screens/mrv_certificate_screen.dart';
+import '../../features/dashboard/presentation/screens/selling_units_detail_screen.dart';
+import '../../features/dashboard/presentation/screens/create_listing_screen.dart';
+import '../../features/dashboard/presentation/screens/view_analytics_screen.dart';
+import '../../features/dashboard/presentation/screens/pricing_tool_screen.dart';
+import '../../features/dashboard/presentation/screens/compliance_check_screen.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
   return GoRouter(
@@ -72,6 +78,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/kyc/pan-verify',
         builder: (context, state) => const PanVerifyScreen(),
+      ),
+      GoRoute(
+        path: '/kyc/waiting',
+        builder: (context, state) => const KYCWaitingScreen(),
       ),
       GoRoute(
         path: '/kyc/mrv-certificate',
@@ -182,6 +192,40 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/tools',
         builder: (context, state) => const ToolsScreen(),
+      ),
+      // Seller Dashboard Internal Routes
+      GoRoute(
+        path: '/selling-units-detail',
+        builder: (context, state) {
+          final extra = state.extra as Map<String, dynamic>?;
+          return SellingUnitsDetailScreen(
+            projectName: extra?['projectName'] ?? 'Solar Farm Maharashtra',
+            projectType: extra?['projectType'] ?? 'Renewable Energy',
+            location: extra?['location'] ?? 'Maharashtra, India',
+            totalCredits: extra?['totalCredits'] ?? 1000,
+            availableCredits: extra?['availableCredits'] ?? 750,
+            soldCredits: extra?['soldCredits'] ?? 250,
+            pricePerCredit: extra?['pricePerCredit'] ?? 850.0,
+            status: extra?['status'] ?? 'Active',
+            lastSale: extra?['lastSale'] ?? '2 days ago',
+          );
+        },
+      ),
+      GoRoute(
+        path: '/create-listing',
+        builder: (context, state) => const CreateListingScreen(),
+      ),
+      GoRoute(
+        path: '/view-analytics',
+        builder: (context, state) => const ViewAnalyticsScreen(),
+      ),
+      GoRoute(
+        path: '/pricing-tool',
+        builder: (context, state) => const PricingToolScreen(),
+      ),
+      GoRoute(
+        path: '/compliance-check',
+        builder: (context, state) => const ComplianceCheckScreen(),
       ),
     ],
   );

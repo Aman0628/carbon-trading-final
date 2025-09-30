@@ -57,12 +57,12 @@ class _CompanyDetailsScreenState extends ConsumerState<CompanyDetailsScreen> {
     if (_isCompanyRegistration) {
       // Company registration - validate form first
       if (_formKey.currentState!.validate()) {
-        // Navigate to PAN card verification for company
-        context.go('/kyc/upload?type=company');
+        // Skip KYC upload and go directly to waiting page
+        context.go('/kyc/waiting');
       }
     } else {
-      // Individual registration - no form validation needed, go to PAN card verification
-      context.go('/kyc/upload?type=individual');
+      // Individual registration - go directly to waiting page
+      context.go('/kyc/waiting');
     }
   }
 

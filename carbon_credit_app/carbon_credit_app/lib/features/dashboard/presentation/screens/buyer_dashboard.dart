@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/providers/auth_provider.dart';
+import '../../../../core/widgets/custom_components.dart';
 import '../../../tools/presentation/screens/tools_screen.dart';
 import '../../../marketplace/presentation/screens/buyer_marketplace_screen.dart';
 
@@ -117,116 +118,230 @@ class _BuyerDashboardState extends ConsumerState<BuyerDashboard>
       body: SafeArea(
         child: Column(
           children: [
-            // Custom Header
+            // Modern Header with Gradient
             Container(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: AppColors.surface,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
-                    blurRadius: 4,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
+                gradient: AppGradients.primaryLight,
+                boxShadow: [AppShadows.soft],
               ),
-              child: Row(
+              child: Column(
                 children: [
-                  // Left side - Name and Role (Clickable)
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: () => _scaffoldKey.currentState?.openDrawer(),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            user.name,
-                            style: AppTextStyles.heading3.copyWith(
-                              fontWeight: FontWeight.w600,
+                  Row(
+                    children: [
+                      // Profile Avatar
+                      GestureDetector(
+                        onTap: () => _scaffoldKey.currentState?.openDrawer(),
+                        child: Container(
+                          width: 48,
+                          height: 48,
+                          decoration: BoxDecoration(
+                            gradient: AppGradients.primary,
+                            borderRadius: BorderRadius.circular(24),
+                            boxShadow: [AppShadows.soft],
+                          ),
+                          child: Center(
+                            child: Text(
+                              user.name.substring(0, 1).toUpperCase(),
+                              style: AppTextStyles.headingMedium.copyWith(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
-                          Text(
-                            'Compliance',
-                            style: AppTextStyles.caption.copyWith(
-                              color: AppColors.textSecondary,
-                              fontSize: 10,
-                            ),
-                          ),
-                        ],
+                        ),
                       ),
-                    ),
-                  ),
-                  
-                  // Right side - EXC Coins only
-                  GestureDetector(
-                    onTap: () => context.push('/wallet'),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: AppColors.primary.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            Icons.monetization_on,
-                            size: 16,
-                            color: AppColors.primary,
+                      const SizedBox(width: 16),
+                      
+                      // User Info
+                      Expanded(
+                        child: GestureDetector(
+                          onTap: () => _scaffoldKey.currentState?.openDrawer(),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Welcome back,',
+                                style: AppTextStyles.bodySmall.copyWith(
+                                  color: AppColors.textSecondary,
+                                ),
+                              ),
+                              Text(
+                                user.name,
+                                style: AppTextStyles.headingMedium.copyWith(
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                              StatusChip(
+                                text: 'Verified Buyer',
+                                color: AppColors.success,
+                                icon: Icons.verified,
+                              ),
+                            ],
                           ),
-                          const SizedBox(width: 4),
-                          Text(
-                            '2,450 EXC',
-                            style: AppTextStyles.caption.copyWith(
-                              color: AppColors.primary,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
+                        ),
                       ),
-                    ),
+                      
+                      // EXC Balance Card
+                      GestureDetector(
+                        onTap: () => context.push('/wallet'),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(16),
+                            boxShadow: [AppShadows.soft],
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(4),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.warning.withOpacity(0.1),
+                                      borderRadius: BorderRadius.circular(6),
+                                    ),
+                                    child: Icon(
+                                      Icons.monetization_on,
+                                      size: 16,
+                                      color: AppColors.warning,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    '2,450',
+                                    style: AppTextStyles.headingSmall.copyWith(
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              Text(
+                                'EXC Coins',
+                                style: AppTextStyles.bodySmall.copyWith(
+                                  color: AppColors.textTertiary,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
             ),
             
-            // Search Bar
+            // Modern Search Bar
             Container(
-              padding: const EdgeInsets.all(16),
-              child: TextField(
-                decoration: InputDecoration(
-                  hintText: 'Search carbon credits, projects...',
-                  prefixIcon: const Icon(Icons.search),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: AppColors.divider),
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: AppColors.surface,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [AppShadows.soft],
+                ),
+                child: TextField(
+                  decoration: InputDecoration(
+                    hintText: 'Search carbon credits, projects, certifications...',
+                    hintStyle: AppTextStyles.bodyMedium.copyWith(
+                      color: AppColors.textHint,
+                    ),
+                    prefixIcon: Container(
+                      padding: const EdgeInsets.all(12),
+                      child: Icon(
+                        Icons.search_rounded,
+                        color: AppColors.textTertiary,
+                        size: 20,
+                      ),
+                    ),
+                    suffixIcon: Container(
+                      margin: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: IconButton(
+                        icon: Icon(
+                          Icons.tune_rounded,
+                          color: AppColors.primary,
+                          size: 20,
+                        ),
+                        onPressed: () {
+                          // Show filter dialog
+                        },
+                      ),
+                    ),
+                    border: InputBorder.none,
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 16,
+                    ),
                   ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: AppColors.divider),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: AppColors.primary),
-                  ),
-                  filled: true,
-                  fillColor: AppColors.surface,
                 ),
               ),
             ),
             
-            // Tab Bar
-            TabBar(
-              controller: _tabController,
-              isScrollable: true,
-              tabs: const [
-                Tab(text: 'Explore'),
-                Tab(text: 'Portfolio'),
-                Tab(text: 'Marketplace'),
-                Tab(text: 'My Certificates'),
-                Tab(text: 'Orders'),
-              ],
+            // Modern Tab Bar
+            Container(
+              margin: const EdgeInsets.symmetric(horizontal: 20),
+              decoration: BoxDecoration(
+                color: AppColors.surfaceVariant,
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: TabBar(
+                controller: _tabController,
+                isScrollable: true,
+                indicator: BoxDecoration(
+                  color: AppColors.primary,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [AppShadows.soft],
+                ),
+                labelColor: Colors.white,
+                unselectedLabelColor: AppColors.textSecondary,
+                labelStyle: AppTextStyles.labelLarge.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
+                unselectedLabelStyle: AppTextStyles.labelLarge,
+                padding: const EdgeInsets.all(4),
+                tabs: const [
+                  Tab(
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      child: Text('Explore'),
+                    ),
+                  ),
+                  Tab(
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      child: Text('Portfolio'),
+                    ),
+                  ),
+                  Tab(
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      child: Text('Marketplace'),
+                    ),
+                  ),
+                  Tab(
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      child: Text('Certificates'),
+                    ),
+                  ),
+                  Tab(
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      child: Text('Orders'),
+                    ),
+                  ),
+                ],
+              ),
             ),
+            const SizedBox(height: 16),
 
             // Tab Bar View
             Expanded(
@@ -1453,77 +1568,102 @@ class _BuyerDashboardState extends ConsumerState<BuyerDashboard>
 
   Widget _buildBottomNavigationBar(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+      margin: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppColors.surface,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 4,
-            offset: const Offset(0, -2),
-          ),
-        ],
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [AppShadows.medium],
+        border: Border.all(
+          color: AppColors.border,
+          width: 0.5,
+        ),
       ),
       child: SafeArea(
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            _buildBottomNavItem(
-              icon: Icons.person,
-              label: 'Account',
-              onTap: () => context.push('/account'),
-            ),
-            _buildBottomNavItem(
-              icon: Icons.account_balance_wallet,
-              label: 'Wallet',
-              onTap: () => context.push('/wallet'),
-            ),
-            _buildBottomNavItem(
-              icon: Icons.newspaper,
-              label: 'News',
-              onTap: () => ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Market news coming soon!')),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _buildModernBottomNavItem(
+                icon: Icons.person_outline,
+                activeIcon: Icons.person,
+                label: 'Account',
+                onTap: () => context.push('/account'),
               ),
-            ),
-            _buildBottomNavItem(
-              icon: Icons.payment,
-              label: 'UPI',
-              onTap: () => context.push('/payment-options'),
-            ),
-            _buildBottomNavItem(
-              icon: Icons.support_agent,
-              label: 'Support',
-              onTap: () => context.push('/contact-us'),
-            ),
-          ],
+              _buildModernBottomNavItem(
+                icon: Icons.account_balance_wallet_outlined,
+                activeIcon: Icons.account_balance_wallet,
+                label: 'Wallet',
+                onTap: () => context.push('/wallet'),
+              ),
+              _buildModernBottomNavItem(
+                icon: Icons.newspaper_outlined,
+                activeIcon: Icons.newspaper,
+                label: 'News',
+                onTap: () => ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: const Text('Market news coming soon!'),
+                    backgroundColor: AppColors.info,
+                    behavior: SnackBarBehavior.floating,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+              ),
+              _buildModernBottomNavItem(
+                icon: Icons.payment_outlined,
+                activeIcon: Icons.payment,
+                label: 'UPI',
+                onTap: () => context.push('/payment-options'),
+              ),
+              _buildModernBottomNavItem(
+                icon: Icons.support_agent_outlined,
+                activeIcon: Icons.support_agent,
+                label: 'Support',
+                onTap: () => context.push('/contact-us'),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildBottomNavItem({
+  Widget _buildModernBottomNavItem({
     required IconData icon,
+    required IconData activeIcon,
     required String label,
     required VoidCallback onTap,
+    bool isActive = false,
   }) {
     return GestureDetector(
       onTap: onTap,
-      child: Container(
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+        decoration: BoxDecoration(
+          color: isActive ? AppColors.primary.withOpacity(0.1) : Colors.transparent,
+          borderRadius: BorderRadius.circular(12),
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              icon,
-              color: AppColors.primary,
-              size: 20,
+            AnimatedSwitcher(
+              duration: const Duration(milliseconds: 200),
+              child: Icon(
+                isActive ? activeIcon : icon,
+                key: ValueKey(isActive),
+                color: isActive ? AppColors.primary : AppColors.textTertiary,
+                size: 22,
+              ),
             ),
             const SizedBox(height: 4),
             Text(
               label,
-              style: AppTextStyles.caption.copyWith(
-                color: AppColors.primary,
-                fontSize: 10,
+              style: AppTextStyles.labelSmall.copyWith(
+                color: isActive ? AppColors.primary : AppColors.textTertiary,
+                fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
               ),
             ),
           ],
