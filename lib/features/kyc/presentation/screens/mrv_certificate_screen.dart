@@ -42,6 +42,22 @@ class _MRVCertificateScreenState extends ConsumerState<MRVCertificateScreen> {
     super.dispose();
   }
 
+  void _fillSampleData() {
+    setState(() {
+      _selectedCertificateType = 'VCS (Verified Carbon Standard)';
+      _certificateNumberController.text = 'VCS-2024-001234';
+      _projectNameController.text = 'Solar Energy Project - Maharashtra';
+      _issuingAuthorityController.text = 'Verra (VCS Program)';
+    });
+    
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Sample data filled successfully!'),
+        backgroundColor: AppColors.info,
+      ),
+    );
+  }
+
   Future<void> _pickCertificateDocument() async {
     final XFile? document = await _picker.pickImage(
       source: ImageSource.gallery,
@@ -64,22 +80,28 @@ class _MRVCertificateScreenState extends ConsumerState<MRVCertificateScreen> {
         await Future.delayed(const Duration(seconds: 3));
 
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('MRV Certificate verification initiated. You will be notified once verified.'),
-              backgroundColor: AppColors.success,
-              duration: Duration(seconds: 4),
-            ),
-          );
-
-          // Navigate to dashboard after successful upload
+          // Navigate to dashboard immediately after submission
           final authState = ref.read(authProvider);
           final user = authState.user!;
           
           if (user.role == UserRole.seller) {
-            context.go('/dashboard/seller');
+            context.go('/seller-dashboard');
+            // Show verification notification on dashboard
+            Future.delayed(const Duration(milliseconds: 500), () {
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Verification under process - You will be notified once verified'),
+                    backgroundColor: AppColors.warning,
+                    duration: Duration(seconds: 5),
+                    behavior: SnackBarBehavior.floating,
+                    margin: EdgeInsets.all(16),
+                  ),
+                );
+              }
+            });
           } else {
-            context.go('/dashboard/buyer');
+            context.go('/buyer-dashboard');
           }
         }
       } catch (e) {
@@ -168,7 +190,7 @@ class _MRVCertificateScreenState extends ConsumerState<MRVCertificateScreen> {
                     labelText: 'Certificate Number',
                     prefixIcon: Icon(Icons.numbers),
                     border: OutlineInputBorder(),
-                    hintText: 'Enter certificate registration number',
+                    hintText: 'e.g., VCS-2024-001234, GS-2024-5678',
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
@@ -186,7 +208,7 @@ class _MRVCertificateScreenState extends ConsumerState<MRVCertificateScreen> {
                     labelText: 'Project Name',
                     prefixIcon: Icon(Icons.eco),
                     border: OutlineInputBorder(),
-                    hintText: 'Enter carbon credit project name',
+                    hintText: 'e.g., Solar Energy Project - Maharashtra',
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
@@ -204,7 +226,7 @@ class _MRVCertificateScreenState extends ConsumerState<MRVCertificateScreen> {
                     labelText: 'Issuing Authority',
                     prefixIcon: Icon(Icons.business),
                     border: OutlineInputBorder(),
-                    hintText: 'Enter certifying organization name',
+                    hintText: 'e.g., Verra (VCS Program), Gold Standard Foundation',
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
@@ -273,6 +295,18 @@ class _MRVCertificateScreenState extends ConsumerState<MRVCertificateScreen> {
                 ),
                 const SizedBox(height: 16),
 
+                // Sample Data Button
+                OutlinedButton.icon(
+                  onPressed: _fillSampleData,
+                  icon: const Icon(Icons.auto_fix_high),
+                  label: const Text('Fill Sample Data'),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppColors.info,
+                    side: BorderSide(color: AppColors.info),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                
                 // Skip for now (temporary)
                 TextButton(
                   onPressed: () {
@@ -280,9 +314,9 @@ class _MRVCertificateScreenState extends ConsumerState<MRVCertificateScreen> {
                     final user = authState.user!;
                     
                     if (user.role == UserRole.seller) {
-                      context.go('/dashboard/seller');
+                      context.go('/seller-dashboard');
                     } else {
-                      context.go('/dashboard/buyer');
+                      context.go('/buyer-dashboard');
                     }
                   },
                   child: Text(

@@ -7,7 +7,11 @@ import '../../../../core/providers/auth_provider.dart';
 import '../../../tools/presentation/screens/tools_screen.dart';
 import '../../../tools/presentation/screens/carbon_calculator_screen.dart' as calc;
 import '../../../tools/presentation/screens/market_news_screen.dart' as news;
-import '../../../marketplace/presentation/screens/seller_marketplace_screen.dart';
+import 'selling_units_detail_screen.dart';
+import 'pricing_tool_screen.dart';
+import 'compliance_check_screen.dart';
+import 'create_listing_screen.dart';
+import 'view_analytics_screen.dart';
 
 class SellerDashboard extends ConsumerStatefulWidget {
   const SellerDashboard({super.key});
@@ -22,6 +26,7 @@ class _SellerDashboardState extends ConsumerState<SellerDashboard>
   int _currentTransactionIndex = 0;
   Timer? _transactionTimer;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  bool _showVerificationBanner = true; // Show verification banner by default
 
   final List<Map<String, String>> _recentSales = [
     {
@@ -53,14 +58,13 @@ class _SellerDashboardState extends ConsumerState<SellerDashboard>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 4, vsync: this);
     _tabController.addListener(_handleTabSelection);
     _startTransactionTimer();
   }
 
   @override
   void dispose() {
-    _transactionTimer?.cancel();
     _tabController.removeListener(_handleTabSelection);
     _tabController.dispose();
     super.dispose();
@@ -98,10 +102,14 @@ class _SellerDashboardState extends ConsumerState<SellerDashboard>
     return Scaffold(
       key: _scaffoldKey,
       drawer: _buildSidebar(context, ref, user),
+      bottomNavigationBar: _buildBottomNavigationBar(context),
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Verification Status Banner
+            if (_showVerificationBanner) _buildVerificationBanner(),
+            
             // Custom Header
             Container(
               padding: const EdgeInsets.all(16),
@@ -207,6 +215,7 @@ class _SellerDashboardState extends ConsumerState<SellerDashboard>
               tabs: const [
                 Tab(text: 'Dashboard', icon: Icon(Icons.dashboard)),
                 Tab(text: 'My Projects', icon: Icon(Icons.eco)),
+                Tab(text: 'Marketplace', icon: Icon(Icons.store)),
                 Tab(text: 'Tools', icon: Icon(Icons.build)),
               ],
             ),
@@ -221,6 +230,9 @@ class _SellerDashboardState extends ConsumerState<SellerDashboard>
                   
                   // My Projects View
                   _buildProjectsView(),
+                  
+                  // Marketplace View
+                  _buildMarketplaceView(),
                   
                   // Tools View
                   _buildToolsView(),
@@ -239,9 +251,9 @@ class _SellerDashboardState extends ConsumerState<SellerDashboard>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Inventory Overview
+          // Performance Overview
           Text(
-            'Inventory Overview',
+            'Performance Overview',
             style: AppTextStyles.heading3,
           ),
           const SizedBox(height: 12),
@@ -264,12 +276,7 @@ class _SellerDashboardState extends ConsumerState<SellerDashboard>
               Expanded(
                 child: GestureDetector(
                   onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const SellerMarketplaceScreen(),
-                      ),
-                    );
+                    _tabController.animateTo(2); // Navigate to Marketplace tab
                   },
                   child: _buildStatsCard(
                     'Marketplace',
@@ -286,7 +293,7 @@ class _SellerDashboardState extends ConsumerState<SellerDashboard>
             children: [
               Expanded(
                 child: _buildStatsCard(
-                  'Total Available Credits',
+                  'Total Credits',
                   '4,300',
                   Icons.inventory,
                   AppColors.info,
@@ -295,13 +302,78 @@ class _SellerDashboardState extends ConsumerState<SellerDashboard>
               const SizedBox(width: 12),
               Expanded(
                 child: _buildStatsCard(
-                  'Active Listings',
-                  '3',
-                  Icons.list_alt,
+                  'Monthly Revenue',
+                  '₹2.4L',
+                  Icons.trending_up,
                   AppColors.warning,
                 ),
               ),
             ],
+          ),
+          const SizedBox(height: 24),
+
+          // Market Insights
+          Text(
+            'Market Insights',
+            style: AppTextStyles.heading3,
+          ),
+          const SizedBox(height: 12),
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Avg Market Price',
+                            style: AppTextStyles.bodyMedium,
+                          ),
+                          Text(
+                            '₹775/credit',
+                            style: AppTextStyles.heading3.copyWith(
+                              color: AppColors.primary,
+                            ),
+                          ),
+                        ],
+                      ),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Text(
+                            'Your Avg Price',
+                            style: AppTextStyles.bodyMedium,
+                          ),
+                          Text(
+                            '₹800/credit',
+                            style: AppTextStyles.heading3.copyWith(
+                              color: AppColors.success,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Icon(Icons.trending_up, color: AppColors.success, size: 16),
+                      const SizedBox(width: 4),
+                      Text(
+                        '+3.2% above market average',
+                        style: AppTextStyles.caption.copyWith(
+                          color: AppColors.success,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
           ),
           const SizedBox(height: 24),
 
@@ -320,6 +392,47 @@ class _SellerDashboardState extends ConsumerState<SellerDashboard>
           ),
           const SizedBox(height: 24),
           
+          // Recent Activity
+          Text(
+            'Recent Activity',
+            style: AppTextStyles.heading3,
+          ),
+          const SizedBox(height: 12),
+          Card(
+            child: Column(
+              children: [
+                _buildActivityItem(
+                  'New inquiry on Solar Farm Credits',
+                  '2 hours ago',
+                  Icons.message,
+                  AppColors.info,
+                ),
+                const Divider(height: 1),
+                _buildActivityItem(
+                  'Listing viewed 15 times today',
+                  '4 hours ago',
+                  Icons.visibility,
+                  AppColors.primary,
+                ),
+                const Divider(height: 1),
+                _buildActivityItem(
+                  'Price updated for Wind Energy Project',
+                  '1 day ago',
+                  Icons.edit,
+                  AppColors.warning,
+                ),
+                const Divider(height: 1),
+                _buildActivityItem(
+                  'Reforestation Project sold successfully',
+                  '2 days ago',
+                  Icons.check_circle,
+                  AppColors.success,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 24),
+          
           // Quick Actions
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -329,13 +442,8 @@ class _SellerDashboardState extends ConsumerState<SellerDashboard>
                 style: AppTextStyles.heading3,
               ),
               TextButton(
-                onPressed: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const ToolsScreen(),
-                  ),
-                ),
-                child: const Text('See All'),
+                onPressed: () => _tabController.animateTo(3),
+                child: const Text('See All Tools'),
               ),
             ],
           ),
@@ -351,9 +459,26 @@ class _SellerDashboardState extends ConsumerState<SellerDashboard>
               _buildActionCard(
                 context: context,
                 icon: Icons.add,
-                title: 'Create Listing',
-                subtitle: 'List new credits',
-                onTap: () => _showCreateListingDialog(context),
+                title: 'New Project',
+                subtitle: 'Add a new project',
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const CreateListingScreen(),
+                  ),
+                ),
+              ),
+              _buildActionCard(
+                context: context,
+                icon: Icons.analytics,
+                title: 'View Analytics',
+                subtitle: 'Performance insights',
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const ViewAnalyticsScreen(),
+                  ),
+                ),
               ),
               _buildActionCard(
                 context: context,
@@ -378,13 +503,6 @@ class _SellerDashboardState extends ConsumerState<SellerDashboard>
                     builder: (context) => const news.MarketNewsScreen(),
                   ),
                 ),
-              ),
-              _buildActionCard(
-                context: context,
-                icon: Icons.analytics,
-                title: 'View Analytics',
-                subtitle: 'Sales insights',
-                onTap: () => _showAnalyticsDialog(context),
               ),
             ],
           ),
@@ -467,7 +585,12 @@ class _SellerDashboardState extends ConsumerState<SellerDashboard>
           SizedBox(
             width: double.infinity,
             child: ElevatedButton.icon(
-              onPressed: () => _showCreateProjectDialog(context),
+              onPressed: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const CreateListingScreen(),
+                  ),
+                ),
               icon: const Icon(Icons.add),
               label: const Text('Add New Project'),
             ),
@@ -477,6 +600,138 @@ class _SellerDashboardState extends ConsumerState<SellerDashboard>
     );
   }
 
+  Widget _buildMarketplaceView() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Selling Units & Credit Details Project-wise
+          Text(
+            'My Credit Listings',
+            style: AppTextStyles.heading3,
+          ),
+          const SizedBox(height: 12),
+          
+          // Project 1 - Solar Farm Maharashtra
+          GestureDetector(
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const SellingUnitsDetailScreen(
+                  projectName: 'Solar Farm Maharashtra',
+                  projectType: 'Renewable Energy',
+                  location: 'Maharashtra, India',
+                  totalCredits: 1500,
+                  availableCredits: 1200,
+                  soldCredits: 300,
+                  pricePerCredit: 850.0,
+                  status: 'Active',
+                  lastSale: '2 days ago',
+                ),
+              ),
+            ),
+            child: _buildProjectCreditCard(
+              projectName: 'Solar Farm Maharashtra',
+              projectType: 'Renewable Energy',
+              location: 'Maharashtra, India',
+              totalCredits: 1500,
+              availableCredits: 1200,
+              soldCredits: 300,
+              pricePerCredit: 850.0,
+              status: 'Active',
+              lastSale: '2 days ago',
+            ),
+          ),
+          const SizedBox(height: 12),
+          
+          // Project 2 - Wind Energy Gujarat  
+          GestureDetector(
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const SellingUnitsDetailScreen(
+                  projectName: 'Wind Energy Gujarat',
+                  projectType: 'Renewable Energy',
+                  location: 'Gujarat, India',
+                  totalCredits: 800,
+                  availableCredits: 650,
+                  soldCredits: 150,
+                  pricePerCredit: 920.0,
+                  status: 'Active',
+                  lastSale: '5 days ago',
+                ),
+              ),
+            ),
+            child: _buildProjectCreditCard(
+              projectName: 'Wind Energy Gujarat',
+              projectType: 'Renewable Energy',
+              location: 'Gujarat, India',
+              totalCredits: 800,
+              availableCredits: 650,
+              soldCredits: 150,
+              pricePerCredit: 920.0,
+              status: 'Active',
+              lastSale: '5 days ago',
+            ),
+          ),
+          const SizedBox(height: 12),
+          
+          // Project 3 - Reforestation Project
+          GestureDetector(
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const SellingUnitsDetailScreen(
+                  projectName: 'Reforestation Himachal',
+                  projectType: 'Forestry',
+                  location: 'Himachal Pradesh, India',
+                  totalCredits: 2000,
+                  availableCredits: 1800,
+                  soldCredits: 200,
+                  pricePerCredit: 650.0,
+                  status: 'Active',
+                  lastSale: '1 week ago',
+                ),
+              ),
+            ),
+            child: _buildProjectCreditCard(
+              projectName: 'Reforestation Himachal',
+              projectType: 'Forestry',
+              location: 'Himachal Pradesh, India',
+              totalCredits: 2000,
+              availableCredits: 1800,
+              soldCredits: 200,
+              pricePerCredit: 650.0,
+              status: 'Active',
+              lastSale: '1 week ago',
+            ),
+          ),
+          const SizedBox(height: 32),
+
+          // Market Trends (moved to bottom)
+          Text(
+            'Market Trends',
+            style: AppTextStyles.heading3,
+          ),
+          const SizedBox(height: 12),
+          Card(
+            child: Column(
+              children: [
+                _buildTrendItem('VCS Credits', '₹775', '+5.2%', true),
+                const Divider(height: 1),
+                _buildTrendItem('Gold Standard', '₹820', '+3.8%', true),
+                const Divider(height: 1),
+                _buildTrendItem('CDM Credits', '₹680', '-1.2%', false),
+                const Divider(height: 1),
+                _buildTrendItem('CAR Credits', '₹790', '+2.1%', true),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
   Widget _buildToolsView() {
     return SingleChildScrollView(
@@ -535,8 +790,11 @@ class _SellerDashboardState extends ConsumerState<SellerDashboard>
                 'Optimize your pricing',
                 Icons.price_change,
                 AppColors.success,
-                () => ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Pricing tool coming soon!')),
+                () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const PricingToolScreen(),
+                  ),
                 ),
               ),
               _buildToolCard(
@@ -544,8 +802,11 @@ class _SellerDashboardState extends ConsumerState<SellerDashboard>
                 'Verify project compliance',
                 Icons.verified_user,
                 AppColors.warning,
-                () => ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Compliance check coming soon!')),
+                () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const ComplianceCheckScreen(),
+                  ),
                 ),
               ),
             ],
@@ -567,6 +828,90 @@ class _SellerDashboardState extends ConsumerState<SellerDashboard>
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildBottomNavigationBar(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 4,
+            offset: const Offset(0, -2),
+          ),
+        ],
+      ),
+      child: SafeArea(
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            _buildBottomNavItem(
+              icon: Icons.person,
+              label: 'Account',
+              onTap: () => context.push('/account'),
+            ),
+            _buildBottomNavItem(
+              icon: Icons.account_balance_wallet,
+              label: 'Wallet',
+              onTap: () => context.push('/wallet'),
+            ),
+            _buildBottomNavItem(
+              icon: Icons.newspaper,
+              label: 'News',
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const news.MarketNewsScreen(),
+                ),
+              ),
+            ),
+            _buildBottomNavItem(
+              icon: Icons.payment,
+              label: 'UPI',
+              onTap: () => context.push('/payment-options'),
+            ),
+            _buildBottomNavItem(
+              icon: Icons.support_agent,
+              label: 'Support',
+              onTap: () => context.push('/contact-us'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBottomNavItem({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
+              color: AppColors.primary,
+              size: 20,
+            ),
+            const SizedBox(height: 4),
+            Text(
+              label,
+              style: AppTextStyles.caption.copyWith(
+                color: AppColors.primary,
+                fontSize: 10,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -675,12 +1020,7 @@ class _SellerDashboardState extends ConsumerState<SellerDashboard>
                   title: 'Marketplace',
                   onTap: () {
                     Navigator.pop(context);
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const SellerMarketplaceScreen(),
-                      ),
-                    );
+                    _tabController.animateTo(2);
                   },
                 ),
                 const Divider(),
@@ -824,58 +1164,6 @@ class _SellerDashboardState extends ConsumerState<SellerDashboard>
             ],
           ),
         ),
-      ),
-    );
-  }
-
-
-  void _showCreateListingDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Create New Listing'),
-        content: const Text(
-          'This feature will allow you to create new carbon credit listings. '
-          'In the full version, this would open a detailed form to enter project details, '
-          'certification information, and pricing.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Close'),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Coming Soon'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showAnalyticsDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Sales Analytics'),
-        content: const Text(
-          'This feature will show detailed analytics including:\n\n'
-          '• Sales performance over time\n'
-          '• Revenue trends\n'
-          '• Popular credit types\n'
-          '• Market price comparisons\n'
-          '• Buyer demographics',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Close'),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Coming Soon'),
-          ),
-        ],
       ),
     );
   }
@@ -1025,29 +1313,7 @@ class _SellerDashboardState extends ConsumerState<SellerDashboard>
     );
   }
 
-  void _showCreateProjectDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Add New Project'),
-        content: const Text(
-          'This feature will allow you to add new carbon credit projects. '
-          'You can specify project details, upload documentation, and set pricing.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Coming Soon'),
-          ),
-        ],
-      ),
-    );
-  }
-
+  
   void _showSaleDetails(Map<String, String> sale) {
     showDialog(
       context: context,
@@ -1116,6 +1382,288 @@ class _SellerDashboardState extends ConsumerState<SellerDashboard>
               value,
               style: AppTextStyles.bodyMedium,
             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildActivityItem(String title, String time, IconData icon, Color color) {
+    return ListTile(
+      leading: CircleAvatar(
+        backgroundColor: color.withOpacity(0.1),
+        child: Icon(icon, color: color, size: 20),
+      ),
+      title: Text(title, style: AppTextStyles.bodyMedium),
+      subtitle: Text(time, style: AppTextStyles.caption),
+      onTap: () => ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Activity: $title')),
+      ),
+    );
+  }
+
+  Widget _buildTrendItem(String standard, String price, String change, bool isPositive) {
+    Color trendColor = isPositive ? AppColors.success : AppColors.error;
+    IconData trendIcon = isPositive ? Icons.trending_up : Icons.trending_down;
+
+    return ListTile(
+      leading: CircleAvatar(
+        backgroundColor: AppColors.primary.withOpacity(0.1),
+        child: Text(
+          standard.substring(0, 2),
+          style: AppTextStyles.caption.copyWith(
+            color: AppColors.primary,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
+      title: Text(standard, style: AppTextStyles.bodyMedium),
+      subtitle: Text('Market average', style: AppTextStyles.caption),
+      trailing: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          Text(
+            price,
+            style: AppTextStyles.bodyLarge.copyWith(
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(trendIcon, size: 16, color: trendColor),
+              Text(
+                change,
+                style: AppTextStyles.caption.copyWith(color: trendColor),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildProjectCreditCard({
+    required String projectName,
+    required String projectType,
+    required String location,
+    required int totalCredits,
+    required int availableCredits,
+    required int soldCredits,
+    required double pricePerCredit,
+    required String status,
+    required String lastSale,
+  }) {
+    final soldPercentage = (soldCredits / totalCredits * 100).toInt();
+    
+    return Card(
+      elevation: 2,
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Project Header
+            Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        projectName,
+                        style: AppTextStyles.bodyLarge.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        '$projectType • $location',
+                        style: AppTextStyles.caption.copyWith(
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: AppColors.success.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    status,
+                    style: AppTextStyles.caption.copyWith(
+                      color: AppColors.success,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            
+            // Credit Statistics
+            Row(
+              children: [
+                Expanded(
+                  child: _buildCreditStat('Total Credits', totalCredits.toString(), Icons.inventory),
+                ),
+                Expanded(
+                  child: _buildCreditStat('Available', availableCredits.toString(), Icons.check_circle),
+                ),
+                Expanded(
+                  child: _buildCreditStat('Sold', soldCredits.toString(), Icons.trending_up),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            
+            // Progress Bar
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Sales Progress',
+                      style: AppTextStyles.caption.copyWith(
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                    Text(
+                      '$soldPercentage% sold',
+                      style: AppTextStyles.caption.copyWith(
+                        color: AppColors.success,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                LinearProgressIndicator(
+                  value: soldCredits / totalCredits,
+                  backgroundColor: AppColors.divider,
+                  valueColor: AlwaysStoppedAnimation<Color>(AppColors.success),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            
+            // Price and Last Sale
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Price per Credit',
+                      style: AppTextStyles.caption.copyWith(
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                    Text(
+                      '₹${pricePerCredit.toStringAsFixed(0)}',
+                      style: AppTextStyles.bodyLarge.copyWith(
+                        color: AppColors.primary,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      'Last Sale',
+                      style: AppTextStyles.caption.copyWith(
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                    Text(
+                      lastSale,
+                      style: AppTextStyles.bodyMedium.copyWith(
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCreditStat(String label, String value, IconData icon) {
+    return Column(
+      children: [
+        Icon(icon, size: 20, color: AppColors.primary),
+        const SizedBox(height: 4),
+        Text(
+          value,
+          style: AppTextStyles.bodyLarge.copyWith(
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        Text(
+          label,
+          style: AppTextStyles.caption.copyWith(
+            color: AppColors.textSecondary,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildVerificationBanner() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: AppColors.warning.withOpacity(0.1),
+        border: Border(
+          bottom: BorderSide(
+            color: AppColors.warning.withOpacity(0.3),
+            width: 1,
+          ),
+        ),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            Icons.hourglass_empty,
+            color: AppColors.warning,
+            size: 20,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              'Verification under process - You will be notified once verified',
+              style: AppTextStyles.bodyMedium.copyWith(
+                color: AppColors.warning,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+          IconButton(
+            onPressed: () {
+              setState(() {
+                _showVerificationBanner = false;
+              });
+            },
+            icon: Icon(
+              Icons.close,
+              color: AppColors.warning,
+              size: 18,
+            ),
+            constraints: const BoxConstraints(),
+            padding: EdgeInsets.zero,
           ),
         ],
       ),

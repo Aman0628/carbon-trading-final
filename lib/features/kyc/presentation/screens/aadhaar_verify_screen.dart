@@ -100,7 +100,7 @@ class _AadhaarVerifyScreenState extends ConsumerState<AadhaarVerifyScreen> {
           );
           
           // Navigate to PAN verification screen
-          context.go('/kyc/pan_verify');
+          context.go('/kyc/pan-verify');
         }
       } else {
         if (mounted) {

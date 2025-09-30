@@ -4,6 +4,9 @@ import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/services/api_service.dart';
+import '../../../../core/config/demo_config.dart';
+import '../../../../core/providers/auth_provider.dart';
+import '../../../../core/models/user.dart';
 
 class KYCUploadScreen extends ConsumerStatefulWidget {
   const KYCUploadScreen({super.key});
@@ -17,55 +20,77 @@ class _KYCUploadScreenState extends ConsumerState<KYCUploadScreen> {
   XFile? _aadhaarFront;
   XFile? _aadhaarBack;
   bool _isUploading = false;
+  String _registrationType = 'individual';
 
-  Future<void> _pickImage(bool isFront) async {
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final uri = GoRouterState.of(context).uri;
+    _registrationType = uri.queryParameters['type'] ?? 'individual';
+  }
+
+  Future<void> _pickImage(String documentType) async {
     final XFile? image = await _picker.pickImage(
       source: ImageSource.camera,
       imageQuality: 80,
     );
-    
+
     if (image != null) {
       setState(() {
-        if (isFront) {
-          _aadhaarFront = image;
-        } else {
-          _aadhaarBack = image;
+        switch (documentType) {
+          case 'aadhaar_front':
+            _aadhaarFront = image;
+            break;
+          case 'aadhaar_back':
+            _aadhaarBack = image;
+            break;
         }
       });
     }
   }
 
+  bool get _isIndividualRegistration => _registrationType == 'individual';
+
   Future<void> _uploadDocuments() async {
-    if (_aadhaarFront == null || _aadhaarBack == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please capture both front and back of Aadhaar card'),
-          backgroundColor: AppColors.error,
-        ),
-      );
-      return;
+    if (_isIndividualRegistration) {
+      if (_aadhaarFront == null || _aadhaarBack == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Please capture both sides of Aadhaar card'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+        return;
+      }
     }
 
     setState(() => _isUploading = true);
 
     try {
       final apiService = ApiService();
-      
-      // Upload front image
-      await apiService.uploadKYCDocument('aadhaar_front', _aadhaarFront!.path);
-      
-      // Upload back image
-      await apiService.uploadKYCDocument('aadhaar_back', _aadhaarBack!.path);
-      
+
+      if (_isIndividualRegistration) {
+        await apiService.uploadKYCDocument('aadhaar_front', _aadhaarFront!.path);
+        await apiService.uploadKYCDocument('aadhaar_back', _aadhaarBack!.path);
+      }
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Documents uploaded successfully!'),
+          SnackBar(
+            content: Text(
+              _isIndividualRegistration
+                  ? 'Aadhaar documents uploaded successfully!'
+                  : 'Proceeding to next step.',
+            ),
             backgroundColor: AppColors.success,
           ),
         );
-        
-        context.go('/kyc/aadhaar-verify');
+
+        if (_isIndividualRegistration) {
+          context.go('/kyc/aadhaar-verify');
+        } else {
+          context.go('/kyc/pan-verify');
+        }
       }
     } catch (e) {
       if (mounted) {
@@ -79,6 +104,24 @@ class _KYCUploadScreenState extends ConsumerState<KYCUploadScreen> {
     } finally {
       setState(() => _isUploading = false);
     }
+  }
+
+  void _handleDemoSkip() {
+    final authState = ref.read(authProvider);
+    final user = authState.user;
+
+    if (user?.role == UserRole.seller) {
+      context.go('/seller-dashboard');
+    } else {
+      context.go('/buyer-dashboard');
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Demo KYC completed - Welcome to the dashboard!'),
+        backgroundColor: AppColors.success,
+      ),
+    );
   }
 
   @override
@@ -95,37 +138,40 @@ class _KYCUploadScreenState extends ConsumerState<KYCUploadScreen> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Text(
-                'Upload Aadhaar Card',
+                _isIndividualRegistration
+                    ? 'Upload KYC Documents'
+                    : 'KYC Verification',
                 style: AppTextStyles.heading2,
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 8),
               Text(
-                'Please capture clear photos of both sides of your Aadhaar card',
+                _isIndividualRegistration
+                    ? 'Please capture clear photos of your Aadhaar card'
+                    : 'You will proceed to the next step for verification.',
                 style: AppTextStyles.bodyMedium,
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 32),
-              
-              // Front Side Upload
-              _buildUploadCard(
-                title: 'Aadhaar Front Side',
-                subtitle: 'Capture the front side with your photo',
-                image: _aadhaarFront,
-                onTap: () => _pickImage(true),
-              ),
-              const SizedBox(height: 16),
-              
-              // Back Side Upload
-              _buildUploadCard(
-                title: 'Aadhaar Back Side',
-                subtitle: 'Capture the back side with address',
-                image: _aadhaarBack,
-                onTap: () => _pickImage(false),
-              ),
-              const SizedBox(height: 32),
-              
-              // Security Notice
+
+              if (_isIndividualRegistration) ...[
+                _buildUploadCard(
+                  title: 'Aadhaar Front Side',
+                  subtitle: 'Capture the front side with your photo',
+                  image: _aadhaarFront,
+                  onTap: () => _pickImage('aadhaar_front'),
+                ),
+                const SizedBox(height: 16),
+                _buildUploadCard(
+                  title: 'Aadhaar Back Side',
+                  subtitle: 'Capture the back side with address',
+                  image: _aadhaarBack,
+                  onTap: () => _pickImage('aadhaar_back'),
+                ),
+              ],
+
+              const Spacer(),
+
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
@@ -134,10 +180,7 @@ class _KYCUploadScreenState extends ConsumerState<KYCUploadScreen> {
                 ),
                 child: Row(
                   children: [
-                    const Icon(
-                      Icons.security,
-                      color: AppColors.info,
-                    ),
+                    const Icon(Icons.security, color: AppColors.info),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Column(
@@ -161,9 +204,8 @@ class _KYCUploadScreenState extends ConsumerState<KYCUploadScreen> {
                   ],
                 ),
               ),
-              const Spacer(),
-              
-              // Upload Button
+              const SizedBox(height: 24),
+
               ElevatedButton(
                 onPressed: _isUploading ? null : _uploadDocuments,
                 child: _isUploading
@@ -179,8 +221,31 @@ class _KYCUploadScreenState extends ConsumerState<KYCUploadScreen> {
                           Text('Uploading...'),
                         ],
                       )
-                    : const Text('Upload Documents'),
+                    : const Text('Continue'),
               ),
+              const SizedBox(height: 16),
+
+              if (DemoConfig.ENABLE_KYC_SKIP)
+                Column(
+                  children: [
+                    OutlinedButton.icon(
+                      onPressed: _isUploading ? null : _handleDemoSkip,
+                      icon: const Icon(Icons.fast_forward),
+                      label: const Text('Skip KYC for Demo'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AppColors.warning,
+                        side: BorderSide(color: AppColors.warning),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Skip document upload and go to dashboard',
+                      style: AppTextStyles.caption.copyWith(
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
             ],
           ),
         ),
@@ -205,7 +270,9 @@ class _KYCUploadScreenState extends ConsumerState<KYCUploadScreen> {
             style: BorderStyle.solid,
           ),
           borderRadius: BorderRadius.circular(12),
-          color: image != null ? AppColors.success.withOpacity(0.1) : Colors.grey.withOpacity(0.05),
+          color: image != null
+              ? AppColors.success.withOpacity(0.1)
+              : Colors.grey.withOpacity(0.05),
         ),
         child: image != null
             ? Row(
@@ -248,10 +315,7 @@ class _KYCUploadScreenState extends ConsumerState<KYCUploadScreen> {
                   ),
                   const Padding(
                     padding: EdgeInsets.only(right: 20),
-                    child: Icon(
-                      Icons.camera_alt,
-                      color: AppColors.success,
-                    ),
+                    child: Icon(Icons.camera_alt, color: AppColors.success),
                   ),
                 ],
               )

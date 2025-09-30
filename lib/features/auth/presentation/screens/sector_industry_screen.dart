@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/config/demo_config.dart'; // DEMO: Import demo config
 
 class SectorIndustryScreen extends ConsumerStatefulWidget {
   const SectorIndustryScreen({super.key});
@@ -151,9 +152,22 @@ class _SectorIndustryScreenState extends ConsumerState<SectorIndustryScreen> {
 
   void _handleContinue() {
     if (_formKey.currentState!.validate()) {
-      // Navigate to KYC upload screen
-      context.go('/kyc/upload');
+      // Navigate to company details screen for verification
+      context.go('/company-details');
     }
+  }
+
+  // DEMO: Skip sector-industry selection
+  void _handleDemoSkip() {
+    // Skip directly to buyer dashboard for demo
+    context.go('/buyer-dashboard');
+    
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Demo buyer setup completed!'),
+        backgroundColor: AppColors.success,
+      ),
+    );
   }
 
   @override
@@ -250,9 +264,33 @@ class _SectorIndustryScreenState extends ConsumerState<SectorIndustryScreen> {
                 // Continue Button
                 ElevatedButton(
                   onPressed: _handleContinue,
-                  child: const Text('Continue to KYC'),
+                  child: const Text('Continue to Company Details'),
                 ),
                 const SizedBox(height: 16),
+                
+                // DEMO: Skip for Demo Button
+                if (DemoConfig.ENABLE_REGISTRATION_SKIP)
+                  Column(
+                    children: [
+                      OutlinedButton.icon(
+                        onPressed: _handleDemoSkip,
+                        icon: const Icon(Icons.fast_forward),
+                        label: const Text('Skip for Demo'),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: AppColors.warning,
+                          side: BorderSide(color: AppColors.warning),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Skip sector selection and go to dashboard',
+                        style: AppTextStyles.caption.copyWith(
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                    ],
+                  ),
 
                 // Info Card
                 Card(

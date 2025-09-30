@@ -5,6 +5,7 @@ import '../../features/auth/presentation/screens/landing_screen.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/auth/presentation/screens/register_screen.dart';
 import '../../features/auth/presentation/screens/sector_industry_screen.dart';
+import '../../features/auth/presentation/screens/company_details_screen.dart';
 import '../../features/auth/presentation/screens/waitlist_screen.dart';
 import '../../features/kyc/presentation/screens/kyc_upload_screen.dart';
 import '../../features/kyc/presentation/screens/aadhaar_verify_screen.dart';
@@ -53,6 +54,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const SectorIndustryScreen(),
       ),
       GoRoute(
+        path: '/company-details',
+        builder: (context, state) => const CompanyDetailsScreen(),
+      ),
+      GoRoute(
         path: '/waitlist',
         builder: (context, state) => const WaitlistScreen(),
       ),
@@ -65,7 +70,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const AadhaarVerifyScreen(),
       ),
       GoRoute(
-        path: '/kyc/pan_verify',
+        path: '/kyc/pan-verify',
         builder: (context, state) => const PanVerifyScreen(),
       ),
       GoRoute(
@@ -78,6 +83,15 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/dashboard/seller',
+        builder: (context, state) => const SellerDashboard(),
+      ),
+      // DEMO: Add simplified dashboard routes for demo functionality
+      GoRoute(
+        path: '/buyer-dashboard',
+        builder: (context, state) => const BuyerDashboard(),
+      ),
+      GoRoute(
+        path: '/seller-dashboard',
         builder: (context, state) => const SellerDashboard(),
       ),
       GoRoute(

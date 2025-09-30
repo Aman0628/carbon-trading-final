@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/providers/auth_provider.dart';
 import '../../../../core/models/user.dart';
+import '../../../../core/config/demo_config.dart'; // DEMO: Import demo config
 
 class RegisterScreen extends ConsumerStatefulWidget {
   const RegisterScreen({super.key});
@@ -55,6 +56,37 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     }
   }
 
+  // DEMO: Skip registration and login with demo user
+  void _handleDemoSkip() async {
+    final demoData = _selectedRole == UserRole.buyer 
+        ? DemoConfig.DEMO_BUYER_DATA 
+        : DemoConfig.DEMO_SELLER_DATA;
+    
+    await ref.read(authProvider.notifier).register(
+      demoData['email'],
+      DemoConfig.DEMO_PASSWORD,
+      demoData['name'],
+      _selectedRole,
+    );
+    
+    final authState = ref.read(authProvider);
+    if (authState.isAuthenticated) {
+      // Skip directly to dashboard for demo users
+      if (_selectedRole == UserRole.seller) {
+        context.go('/seller-dashboard');
+      } else {
+        context.go('/buyer-dashboard');
+      }
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Demo ${_selectedRole.name} account created successfully!'),
+          backgroundColor: AppColors.success,
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authProvider);
@@ -64,7 +96,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         title: const Text('Register'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.go('/'),
+          onPressed: () => context.pop(),
         ),
       ),
       body: SafeArea(
@@ -124,6 +156,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   decoration: const InputDecoration(
                     labelText: 'Full Name',
                     prefixIcon: Icon(Icons.person),
+                    hintText: 'e.g., John Doe',
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
@@ -141,6 +174,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   decoration: const InputDecoration(
                     labelText: 'Email',
                     prefixIcon: Icon(Icons.email),
+                    hintText: 'e.g., john.doe@company.com',
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
@@ -162,6 +196,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     labelText: 'Phone Number',
                     prefixIcon: Icon(Icons.phone),
                     prefixText: '+91 ',
+                    hintText: 'e.g., 9876543210',
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
@@ -251,6 +286,30 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       : const Text('Create Account'),
                 ),
                 const SizedBox(height: 16),
+                
+                // DEMO: Skip for Demo Button
+                if (DemoConfig.ENABLE_REGISTRATION_SKIP)
+                  Column(
+                    children: [
+                      OutlinedButton.icon(
+                        onPressed: authState.isLoading ? null : _handleDemoSkip,
+                        icon: const Icon(Icons.fast_forward),
+                        label: Text('Skip for Demo (${_selectedRole.name.toUpperCase()})'),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: AppColors.warning,
+                          side: BorderSide(color: AppColors.warning),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Quick demo access - bypasses registration',
+                        style: AppTextStyles.caption.copyWith(
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                    ],
+                  ),
                 
                 // Login Link
                 TextButton(

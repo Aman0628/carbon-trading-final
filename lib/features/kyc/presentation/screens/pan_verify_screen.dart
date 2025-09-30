@@ -23,6 +23,19 @@ class _PanVerifyScreenState extends ConsumerState<PanVerifyScreen> {
     super.dispose();
   }
 
+  void _fillSamplePAN() {
+    setState(() {
+      _panController.text = 'ABCDE1234F';
+    });
+    
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Sample PAN filled successfully!'),
+        backgroundColor: AppColors.info,
+      ),
+    );
+  }
+
   Future<void> _verifyPan() async {
     if (_formKey.currentState!.validate()) {
       setState(() => _isLoading = true);
@@ -38,16 +51,16 @@ class _PanVerifyScreenState extends ConsumerState<PanVerifyScreen> {
           ),
         );
 
-        // Check user role and redirect accordingly
+        // Navigate based on user role - sellers need MRV verification
         final authState = ref.read(authProvider);
-        final user = authState.user!;
+        final user = authState.user;
         
-        if (user.role == UserRole.seller) {
-          // Sellers need MRV certificate verification
+        if (user?.role == UserRole.seller) {
+          // Sellers go to MRV certificate verification
           context.go('/kyc/mrv-certificate');
         } else {
           // Buyers go directly to dashboard
-          context.go('/dashboard/buyer');
+          context.go('/buyer-dashboard');
         }
       }
 
@@ -89,7 +102,7 @@ class _PanVerifyScreenState extends ConsumerState<PanVerifyScreen> {
                   decoration: const InputDecoration(
                     labelText: 'PAN Number',
                     prefixIcon: Icon(Icons.credit_card),
-                    hintText: 'Enter 10-digit PAN number',
+                    hintText: 'e.g., ABCDE1234F (Format: AAAAA9999A)',
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
@@ -107,6 +120,18 @@ class _PanVerifyScreenState extends ConsumerState<PanVerifyScreen> {
                   child: _isLoading
                       ? const CircularProgressIndicator()
                       : const Text('Verify PAN'),
+                ),
+                const SizedBox(height: 16),
+                
+                // Sample Data Button
+                OutlinedButton.icon(
+                  onPressed: _isLoading ? null : _fillSamplePAN,
+                  icon: const Icon(Icons.auto_fix_high),
+                  label: const Text('Fill Sample PAN'),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppColors.info,
+                    side: BorderSide(color: AppColors.info),
+                  ),
                 ),
               ],
             ),

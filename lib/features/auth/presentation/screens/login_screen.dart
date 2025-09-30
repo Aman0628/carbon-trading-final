@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/providers/auth_provider.dart';
 import '../../../../core/models/user.dart';
+import '../../../../core/config/demo_config.dart'; // DEMO: Import demo config
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -48,18 +49,40 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               context.go('/dashboard/seller');
             }
           } else {
-            print('Navigating to KYC upload');
+            print('KYC not approved, navigating to KYC upload');
             context.go('/kyc/upload');
           }
-        } else if (authState.error != null) {
-          print('Login error: ${authState.error}');
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(authState.error!),
-              backgroundColor: Colors.red,
-            ),
-          );
         }
+      }
+    }
+  }
+
+  // DEMO: Quick demo login
+  void _handleDemoLogin(UserRole role) async {
+    final email = role == UserRole.buyer 
+        ? DemoConfig.DEMO_BUYER_EMAIL 
+        : DemoConfig.DEMO_SELLER_EMAIL;
+    
+    await ref.read(authProvider.notifier).login(
+      email,
+      DemoConfig.DEMO_PASSWORD,
+    );
+    
+    if (mounted) {
+      final authState = ref.read(authProvider);
+      if (authState.isAuthenticated) {
+        if (role == UserRole.buyer) {
+          context.go('/buyer-dashboard');
+        } else {
+          context.go('/seller-dashboard');
+        }
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Demo ${role.name} login successful!'),
+            backgroundColor: AppColors.success,
+          ),
+        );
       }
     }
   }
@@ -170,6 +193,56 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       : const Text('Login'),
                 ),
                 const SizedBox(height: 16),
+                
+                // DEMO: Quick Demo Login Buttons
+                if (DemoConfig.ENABLE_DEMO_LOGIN)
+                  Column(
+                    children: [
+                      Text(
+                        'Quick Demo Access',
+                        style: AppTextStyles.bodyMedium.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: OutlinedButton.icon(
+                              onPressed: authState.isLoading ? null : () => _handleDemoLogin(UserRole.buyer),
+                              icon: const Icon(Icons.shopping_cart, size: 16),
+                              label: const Text('Demo Buyer'),
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: AppColors.primary,
+                                side: BorderSide(color: AppColors.primary),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: OutlinedButton.icon(
+                              onPressed: authState.isLoading ? null : () => _handleDemoLogin(UserRole.seller),
+                              icon: const Icon(Icons.sell, size: 16),
+                              label: const Text('Demo Seller'),
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: AppColors.success,
+                                side: BorderSide(color: AppColors.success),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Instant access with pre-configured demo accounts',
+                        style: AppTextStyles.caption.copyWith(
+                          color: AppColors.textSecondary,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 16),
+                    ],
+                  ),
                 
                 // Register Link
                 TextButton(

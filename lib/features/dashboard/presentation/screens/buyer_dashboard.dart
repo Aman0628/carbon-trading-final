@@ -113,6 +113,7 @@ class _BuyerDashboardState extends ConsumerState<BuyerDashboard>
     return Scaffold(
       key: _scaffoldKey,
       drawer: _buildSidebar(context, ref, user),
+      bottomNavigationBar: _buildBottomNavigationBar(context),
       body: SafeArea(
         child: Column(
           children: [
@@ -1447,6 +1448,87 @@ class _BuyerDashboardState extends ConsumerState<BuyerDashboard>
           ],
         );
       },
+    );
+  }
+
+  Widget _buildBottomNavigationBar(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 4,
+            offset: const Offset(0, -2),
+          ),
+        ],
+      ),
+      child: SafeArea(
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            _buildBottomNavItem(
+              icon: Icons.person,
+              label: 'Account',
+              onTap: () => context.push('/account'),
+            ),
+            _buildBottomNavItem(
+              icon: Icons.account_balance_wallet,
+              label: 'Wallet',
+              onTap: () => context.push('/wallet'),
+            ),
+            _buildBottomNavItem(
+              icon: Icons.newspaper,
+              label: 'News',
+              onTap: () => ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Market news coming soon!')),
+              ),
+            ),
+            _buildBottomNavItem(
+              icon: Icons.payment,
+              label: 'UPI',
+              onTap: () => context.push('/payment-options'),
+            ),
+            _buildBottomNavItem(
+              icon: Icons.support_agent,
+              label: 'Support',
+              onTap: () => context.push('/contact-us'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBottomNavItem({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
+              color: AppColors.primary,
+              size: 20,
+            ),
+            const SizedBox(height: 4),
+            Text(
+              label,
+              style: AppTextStyles.caption.copyWith(
+                color: AppColors.primary,
+                fontSize: 10,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
